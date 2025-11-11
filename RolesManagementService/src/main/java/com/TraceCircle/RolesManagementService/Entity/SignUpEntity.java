@@ -12,29 +12,35 @@ import java.time.LocalDateTime;
 @Table(name = "TC_SIGNUP")
 public class SignUpEntity {
 
-  @Id 
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	@Id 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @OneToOne
-  @JoinColumn(name = "system_admin_id", referencedColumnName = "id", nullable = false)
-  private SystemAdminOnboardingEntity systemAdmin;
+    @OneToOne
+    @JoinColumn(name = "system_admin_id", referencedColumnName = "id", nullable = false)
+    private SystemAdminOnboardingEntity systemAdmin;
 
-  @Column(unique = true, nullable = false, length = 180)
-  private String emailId;
+    @Column(unique = true, nullable = false, length = 180)
+    private String emailId;
 
-  @Column(nullable = false, length = 80)
-  private String passwordHash;  
+    @Column(nullable = false, length = 80)
+    private String passwordHash;  
 
-	  @Enumerated(EnumType.STRING)
-	  @Column(nullable = false)
-	  private RoleEnum role;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private RoleEnum role;
+	
+	@Column(name = "reset_otp")
+    private String resetOtp;
 
-  private LocalDateTime timeStamp;
+	@Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
 
-  @PrePersist
-  void onCreated() 
-  { 
-	  this.timeStamp = LocalDateTime.now().withNano(0);   
-  }
+    private LocalDateTime timeStamp;
+    
+    @PrePersist
+    void onCreated(){ 
+	
+    	this.timeStamp = LocalDateTime.now().withNano(0);   	
+    }
 }

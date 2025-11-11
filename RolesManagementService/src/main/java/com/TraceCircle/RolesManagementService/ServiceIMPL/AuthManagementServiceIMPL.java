@@ -1,5 +1,7 @@
 package com.TraceCircle.RolesManagementService.ServiceIMPL;
 
+import java.time.LocalDateTime;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,15 +11,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.TraceCircle.RolesManagementService.DTO.AuthResponseDTO;
+import com.TraceCircle.RolesManagementService.DTO.ForgotPasswordRequestDTO;
 import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
+import com.TraceCircle.RolesManagementService.DTO.ResetPasswordDTO;
 import com.TraceCircle.RolesManagementService.DTO.SignUpDTO;
 import com.TraceCircle.RolesManagementService.DTO.SignupRequest;
 import com.TraceCircle.RolesManagementService.DTO.SystemAdminOnboardingDTO;
+import com.TraceCircle.RolesManagementService.Entity.OtpEntity;
 import com.TraceCircle.RolesManagementService.Entity.SignUpEntity;
 import com.TraceCircle.RolesManagementService.Entity.SystemAdminOnboardingEntity;
 import com.TraceCircle.RolesManagementService.Exception.ApiException;
+import com.TraceCircle.RolesManagementService.Repository.OtpRepository;
 import com.TraceCircle.RolesManagementService.Repository.SignUpRepository;
 import com.TraceCircle.RolesManagementService.Repository.SystemAdminOnboardingRepository;
+import com.TraceCircle.RolesManagementService.Security.EmailUtil;
 import com.TraceCircle.RolesManagementService.Security.JWTUtil;
 import com.TraceCircle.RolesManagementService.Security.PasswordValidator;
 import com.TraceCircle.RolesManagementService.Service.AuthManagementService;
@@ -31,6 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthManagementServiceIMPL implements AuthManagementService {
 
     private final SystemAdminOnboardingRepository onboardingRepo;
+    private final OtpRepository otpRepo;
+    private final EmailUtil emailUtil;
     private final SignUpRepository signUpRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
@@ -119,5 +128,56 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
 
         return new AuthResponseDTO(newAccess, newRefresh, "Bearer");
     }
+    
+    @Override
+    public void requestPasswordOtp(ForgotPasswordRequestDTO req) {
+
+        SignUpEntity user = signUpRepo.findByEmailId(req.getEmailId())
+                .orElseThrow(() -> new ApiException("Email not registered"));
+
+        String otp = String.format("%06d", new java.util.Random().nextInt(1000000));
+
+        OtpEntity otpEntity = new OtpEntity(null, req.getEmailId(), otp,
+                LocalDateTime.now().plusMinutes(10), false);
+
+        otpRepo.save(otpEntity);
+
+        log.info("OTP generated for {} | OTP={}", req.getEmailId(), otp);
+
+        emailUtil.sendOtpEmail(req.getEmailId(), otp);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordDTO req) {
+
+        if (!req.getNewPassword().equals(req.getConfirmPassword()))
+            throw new ApiException("Passwords do not match");
+
+        PasswordValidator.validateOrThrow(req.getNewPassword());
+
+        OtpEntity otpRecord = otpRepo.findTopByEmailIdAndUsedFalseOrderByIdDesc(req.getEmailId())
+                .orElseThrow(() -> new ApiException("No OTP found or expired"));
+
+        if (!otpRecord.getOtp().equals(req.getOtp()))
+            throw new ApiException("Invalid OTP");
+
+        if (otpRecord.getExpiresAt().isBefore(LocalDateTime.now()))
+            throw new ApiException("OTP expired, request again");
+
+        SignUpEntity user = signUpRepo.findByEmailId(req.getEmailId())
+                .orElseThrow(() -> new ApiException("User not found"));
+
+        user.setPasswordHash(encoder.encode(req.getNewPassword()));
+        signUpRepo.save(user);
+
+        otpRecord.setUsed(true);
+        otpRepo.save(otpRecord);
+
+        emailUtil.sendPasswordResetConfirmation(req.getEmailId());
+
+        log.info("Password updated successfully for {}", req.getEmailId());
+    }
+
 
 }
