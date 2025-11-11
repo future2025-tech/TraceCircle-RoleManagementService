@@ -1,12 +1,14 @@
 package com.TraceCircle.RolesManagementService.Exception;
 
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.validation.ConstraintViolationException;
-
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

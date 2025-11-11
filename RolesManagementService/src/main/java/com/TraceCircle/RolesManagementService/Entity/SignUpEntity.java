@@ -1,15 +1,29 @@
 package com.TraceCircle.RolesManagementService.Entity;
 
-import com.TraceCircle.RolesManagementService.Constant.RoleEnum;
-import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
+
+import com.TraceCircle.RolesManagementService.Constant.RoleEnum;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data 
 @Entity 
 @AllArgsConstructor 
 @NoArgsConstructor
-@Table(name = "TC_SIGNUP")
+@Table(name = "TC_SYSTEMADMIN_SIGNUP")
 public class SignUpEntity {
 
 	@Id 

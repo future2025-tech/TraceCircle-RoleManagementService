@@ -65,18 +65,24 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
         log.debug("Validating signup request for email={}", req.getEmailId());
 
         if (!req.getPassword().equals(req.getConfirmPassword())) {
-            log.warn("Signup failed: password mismatch for email={}", req.getEmailId());
-            throw new ApiException("Passwords do not match");
+           
+        	log.warn("Signup failed: password mismatch for email={}", req.getEmailId());
+            
+        	throw new ApiException("Passwords do not match");
         }
 
         if (!PasswordValidator.isStrong(req.getPassword())) {
-            log.warn("Signup failed: weak password for email={}", req.getEmailId());
-            throw new ApiException("Weak password");
+            
+        	log.warn("Signup failed: weak password for email={}", req.getEmailId());
+            
+        	throw new ApiException("Weak password");
         }
 
         if (signUpRepo.existsByEmailId(req.getEmailId())) {
-            log.warn("Signup failed: duplicate email={}", req.getEmailId());
-            throw new ApiException("Email already registered");
+           
+        	log.warn("Signup failed: duplicate email={}", req.getEmailId());
+            
+        	throw new ApiException("Email already registered");
         }
 
         SystemAdminOnboardingEntity systemAdmin = onboardingRepo.findById(req.getSystemAdminId())
@@ -93,10 +99,9 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
         SignUpEntity saved = signUpRepo.save(user);
 
         log.info("User created successfully | userId={} | email={}", saved.getId(), saved.getEmailId());
+       
         return mapper.map(saved, SignUpDTO.class);
     }
-
-
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO req) {
@@ -115,7 +120,8 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
     
     @Override
     public AuthResponseDTO refreshToken(String refreshToken) {
-        String email = jwtUtil.extractUsername(refreshToken);
+       
+    	String email = jwtUtil.extractUsername(refreshToken);
 
         if (!jwtUtil.isValidToken(refreshToken, email)) {
             throw new ApiException("Invalid or expired refresh token");
@@ -178,6 +184,4 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
 
         log.info("Password updated successfully for {}", req.getEmailId());
     }
-
-
 }

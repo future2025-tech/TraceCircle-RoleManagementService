@@ -18,23 +18,10 @@ public class EmailUtil {
     @Value("${spring.mail.username}")
     private String from;
 
-    public void sendOtpEmail(String to, String otp) {
-        
-    	send(to, "Password Reset OTP", 
-            "Your OTP is: " + otp + "\n\nValid for 5 minutes."
-            		+ "\n\n- TraceCircle Team");
-    }
-
-    public void sendPasswordResetConfirmation(String to) {
+    public void sendEmail(String to, String subject, String text) {
        
-    	send(to, "Password Updated Successfully",
-            "Your password has been changed.\nIf not you, contact support."
-            + "\n\n- TraceCircle Team");
-    }
-
-    private void send(String to, String subject, String text) {
-       
-    	try {
+    	try 
+    	{
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(from);
             msg.setTo(to);
@@ -42,12 +29,26 @@ public class EmailUtil {
             msg.setText(text);
 
             mailSender.send(msg);
-           
-            log.info("Email successfully sent to {}", to);
-        } 
-        catch (Exception e) {
             
-        	log.error("Failed to send email to {}: {}", to, e.getMessage());
+            log.info("Email successfully sent to {}", to);
+
+        } 
+    	catch (Exception e) 
+    	{
+            log.error("Failed to send email to {}: {}", to, e.getMessage());
         }
+    }
+
+    public void sendOtpEmail(String to, String otp) {
+        
+    	sendEmail(to, "Password Reset OTP", 
+            "Your OTP is: " + otp + "\n\nValid for 5 minutes.\n- TraceCircle Team");
+    }
+
+    public void sendPasswordResetConfirmation(String to) {
+       
+    	sendEmail(to, "Password Updated Successfully",
+            "Your password has been changed.\nIf not you"
+            + ", contact support.\n- TraceCircle Team");
     }
 }

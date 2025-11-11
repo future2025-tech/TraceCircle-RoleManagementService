@@ -1,9 +1,17 @@
 package com.TraceCircle.RolesManagementService.Controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.TraceCircle.RolesManagementService.DTO.*;
+import com.TraceCircle.RolesManagementService.DTO.AuthResponseDTO;
+import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
+import com.TraceCircle.RolesManagementService.DTO.SignUpDTO;
+import com.TraceCircle.RolesManagementService.DTO.SignupRequest;
+import com.TraceCircle.RolesManagementService.DTO.SystemAdminOnboardingDTO;
 import com.TraceCircle.RolesManagementService.Service.AuthManagementService;
 
 import lombok.RequiredArgsConstructor;
