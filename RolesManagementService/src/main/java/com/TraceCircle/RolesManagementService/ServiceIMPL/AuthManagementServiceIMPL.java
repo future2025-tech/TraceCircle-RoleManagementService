@@ -39,17 +39,18 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
 
     private final SystemAdminOnboardingRepository onboardingRepo;
     private final OtpRepository otpRepo;
-    private final EmailUtil emailUtil;
     private final SignUpRepository signUpRepo;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailUtil emailUtil;
     private final JWTUtil jwtUtil;
     private final ModelMapper mapper;
 
     @Override
     public SystemAdminOnboardingDTO onboardSystemAdmin(SystemAdminOnboardingDTO dto) {
         
-    	SystemAdminOnboardingEntity entity = mapper.map(dto, SystemAdminOnboardingEntity.class);
+    	SystemAdminOnboardingEntity entity = mapper.map(
+    			dto, SystemAdminOnboardingEntity.class);
        
     	SystemAdminOnboardingEntity saved = onboardingRepo.save(entity);
         
@@ -62,44 +63,43 @@ public class AuthManagementServiceIMPL implements AuthManagementService {
     @Transactional
     public SignUpDTO signup(SignupRequest req) {
 
-        log.debug("Validating signup request for email={}", req.getEmailId());
+        log.debug("Validating signup request");
 
+        // 1. Get the latest system admin onboarding record
+        SystemAdminOnboardingEntity systemAdmin = onboardingRepo
+                .findTopByOrderByIdDesc()
+                .orElseThrow(() -> new ApiException("No onboarding record found"));
+
+        String emailFromOnboarding = systemAdmin.getSystemEmailId();
+
+        log.info("System Admin found id={} email={}", systemAdmin.getId(), emailFromOnboarding);
+
+        // 2. Check passwords match
         if (!req.getPassword().equals(req.getConfirmPassword())) {
-           
-        	log.warn("Signup failed: password mismatch for email={}", req.getEmailId());
-            
-        	throw new ApiException("Passwords do not match");
+            throw new ApiException("Passwords do not match");
         }
 
+        // 3. Validate password strength
         if (!PasswordValidator.isStrong(req.getPassword())) {
-            
-        	log.warn("Signup failed: weak password for email={}", req.getEmailId());
-            
-        	throw new ApiException("Weak password");
+            throw new ApiException("Password does not meet strength requirements");
         }
 
-        if (signUpRepo.existsByEmailId(req.getEmailId())) {
-           
-        	log.warn("Signup failed: duplicate email={}", req.getEmailId());
-            
-        	throw new ApiException("Email already registered");
+        // 4. Prevent duplicate registration
+        if (signUpRepo.existsByEmailId(emailFromOnboarding)) {
+            throw new ApiException("Email already registered");
         }
 
-        SystemAdminOnboardingEntity systemAdmin = onboardingRepo.findById(req.getSystemAdminId())
-                .orElseThrow(() -> new ApiException("System Admin not found"));
-
-        log.info("Creating user for systemAdminId={}", req.getSystemAdminId());
-
+        // 5. Create new signup user
         SignUpEntity user = new SignUpEntity();
         user.setSystemAdmin(systemAdmin);
-        user.setEmailId(req.getEmailId());
+        user.setEmailId(emailFromOnboarding);
         user.setPasswordHash(encoder.encode(req.getPassword()));
         user.setRole(req.getRole());
 
         SignUpEntity saved = signUpRepo.save(user);
 
         log.info("User created successfully | userId={} | email={}", saved.getId(), saved.getEmailId());
-       
+
         return mapper.map(saved, SignUpDTO.class);
     }
 

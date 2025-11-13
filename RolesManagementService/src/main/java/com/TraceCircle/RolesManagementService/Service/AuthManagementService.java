@@ -12,7 +12,7 @@ public interface AuthManagementService {
 
     SystemAdminOnboardingDTO onboardSystemAdmin(SystemAdminOnboardingDTO dto);
 
-    SignUpDTO signup(SignupRequest request);
+    public SignUpDTO signup(SignupRequest req);
 
     AuthResponseDTO login(LoginRequestDTO request);
     

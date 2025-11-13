@@ -3,7 +3,6 @@ package com.TraceCircle.RolesManagementService.DTO;
 import java.time.LocalDateTime;
 
 import com.TraceCircle.RolesManagementService.Constant.RoleEnum;
-import com.TraceCircle.RolesManagementService.Entity.SystemAdminOnboardingEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +15,7 @@ public class SignUpDTO {
 
 	private Long id;
 
-	private SystemAdminOnboardingEntity systemAdmin;
+	private Long systemAdminId;
 	
 	private String emailId;
 

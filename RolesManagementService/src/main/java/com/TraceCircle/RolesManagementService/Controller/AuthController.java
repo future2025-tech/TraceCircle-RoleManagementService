@@ -11,8 +11,12 @@ import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
 import com.TraceCircle.RolesManagementService.DTO.SignUpDTO;
 import com.TraceCircle.RolesManagementService.DTO.SignupRequest;
 import com.TraceCircle.RolesManagementService.DTO.SystemAdminOnboardingDTO;
+import com.TraceCircle.RolesManagementService.Entity.SystemAdminOnboardingEntity;
+import com.TraceCircle.RolesManagementService.Exception.ApiException;
+import com.TraceCircle.RolesManagementService.Repository.SystemAdminOnboardingRepository;
 import com.TraceCircle.RolesManagementService.Service.AuthManagementService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 
     private final AuthManagementService authService;
+    private final SystemAdminOnboardingRepository onboardingRepo;
 
     @PostMapping("/onboarding")
     public ResponseEntity<SystemAdminOnboardingDTO> onboard(@RequestBody SystemAdminOnboardingDTO dto) {
@@ -33,11 +38,26 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<SignUpDTO> signup(@RequestBody SignupRequest req) {
-       
-    	log.info("Signup request: {}", req.getEmailId());
-        
-    	return ResponseEntity.ok(authService.signup(req));
+    public ResponseEntity<SignUpDTO> signup(@Valid @RequestBody SignupRequest req) {
+
+        log.info("Signup request received");
+
+        SystemAdminOnboardingEntity latestAdmin =
+                onboardingRepo.findTopByOrderByIdDesc().orElseThrow(
+                        () -> new ApiException("No system admin onboarded yet"));
+
+        Long systemAdminId = latestAdmin.getId();
+
+        log.info("Automatically assigning systemAdminId={} and email={}",
+                systemAdminId, latestAdmin.getSystemEmailId());
+
+        // 2️⃣ Inject system email automatically into DTO
+        req.setEmailId(latestAdmin.getSystemEmailId());
+
+        // 3️⃣ Call service with systemAdminId
+        SignUpDTO response = authService.signup(req);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
