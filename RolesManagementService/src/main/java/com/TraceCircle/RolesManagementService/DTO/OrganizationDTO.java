@@ -1,5 +1,7 @@
 package com.TraceCircle.RolesManagementService.DTO;
 
+import java.time.LocalDateTime;
+
 import com.TraceCircle.RolesManagementService.Constant.BusinessTypeEnum;
 import com.TraceCircle.RolesManagementService.Constant.DesignationRoleEnum;
 import com.TraceCircle.RolesManagementService.Constant.IndustryEnum;
@@ -36,5 +38,7 @@ public class OrganizationDTO {
 	private String websiteLink;
 	
 	private Boolean status;
+	
+	private LocalDateTime timeStamp;
 	
 }

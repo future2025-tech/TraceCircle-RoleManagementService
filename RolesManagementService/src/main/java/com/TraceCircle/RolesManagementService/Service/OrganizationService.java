@@ -3,10 +3,10 @@ package com.TraceCircle.RolesManagementService.Service;
 import java.util.List;
 
 import com.TraceCircle.RolesManagementService.DTO.AuthResponseDTO;
-import com.TraceCircle.RolesManagementService.DTO.CreateOrganizationLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.CreateLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
 import com.TraceCircle.RolesManagementService.DTO.OrganizationDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationLoginRequestDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationSetPasswordDTO;
+import com.TraceCircle.RolesManagementService.DTO.SetPasswordDTO;
 
 public interface OrganizationService {
 
@@ -20,11 +20,11 @@ public interface OrganizationService {
 	
 	void delete(Long id);
 	
-	public void createLoginForOrganization(CreateOrganizationLoginDTO dto);
+	public void createLoginForOrganization(CreateLoginDTO dto);
 	
-	public void setPassword(OrganizationSetPasswordDTO dto);
+	public void setPassword(SetPasswordDTO dto);
 	
-	public AuthResponseDTO login(OrganizationLoginRequestDTO dto);
+	public AuthResponseDTO loginOrganization(LoginRequestDTO dto);
 	
 	
 }

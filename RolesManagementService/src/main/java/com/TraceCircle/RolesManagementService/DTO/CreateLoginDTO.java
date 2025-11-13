@@ -3,7 +3,7 @@ package com.TraceCircle.RolesManagementService.DTO;
 import lombok.Data;
 
 @Data
-public class CreateOrganizationLoginDTO {
+public class CreateLoginDTO {
     
-	private Long organizationId;
+	private Long id;
 }

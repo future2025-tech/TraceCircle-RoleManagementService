@@ -3,7 +3,7 @@ package com.TraceCircle.RolesManagementService.DTO;
 import lombok.Data;
 
 @Data
-public class OrganizationSetPasswordDTO {
+public class SetPasswordDTO {
     
 	private String token;
     

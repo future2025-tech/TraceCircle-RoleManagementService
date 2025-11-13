@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.TraceCircle.RolesManagementService.DTO.AuthResponseDTO;
-import com.TraceCircle.RolesManagementService.DTO.CreateOrganizationLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.CreateLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
 import com.TraceCircle.RolesManagementService.DTO.OrganizationDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationLoginRequestDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationSetPasswordDTO;
+import com.TraceCircle.RolesManagementService.DTO.SetPasswordDTO;
 import com.TraceCircle.RolesManagementService.Service.OrganizationService;
 
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class OrganizationController {
     }
     
     @PostMapping("/create-login")
-    public ResponseEntity<?> createLogin(@RequestBody CreateOrganizationLoginDTO dto) {
+    public ResponseEntity<?> createLogin(@RequestBody CreateLoginDTO dto) {
        
     	service.createLoginForOrganization(dto);
         
@@ -71,7 +71,7 @@ public class OrganizationController {
     }
 
     @PostMapping("/set-password")
-    public ResponseEntity<?> setPassword(@RequestBody OrganizationSetPasswordDTO dto) {
+    public ResponseEntity<?> setPassword(@RequestBody SetPasswordDTO dto) {
         
     	service.setPassword(dto);
         
@@ -79,8 +79,8 @@ public class OrganizationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody OrganizationLoginRequestDTO dto) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginRequestDTO dto) {
        
-    	return ResponseEntity.ok(service.login(dto));
+    	return ResponseEntity.ok(service.loginOrganization(dto));
     }
 }

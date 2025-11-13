@@ -5,14 +5,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.TraceCircle.RolesManagementService.DTO.AuthResponseDTO;
-import com.TraceCircle.RolesManagementService.DTO.CreateOrganizationLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.CreateLoginDTO;
+import com.TraceCircle.RolesManagementService.DTO.LoginRequestDTO;
 import com.TraceCircle.RolesManagementService.DTO.OrganizationDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationLoginRequestDTO;
-import com.TraceCircle.RolesManagementService.DTO.OrganizationSetPasswordDTO;
+import com.TraceCircle.RolesManagementService.DTO.SetPasswordDTO;
 import com.TraceCircle.RolesManagementService.Entity.OrganizationEntity;
 import com.TraceCircle.RolesManagementService.Entity.OrganizationLoginToken;
 import com.TraceCircle.RolesManagementService.Entity.OrganizationUserEntity;
@@ -40,6 +43,7 @@ public class OrganizationServiceIMPL implements OrganizationService {
     private final SystemAdminOnboardingRepository onboardingRepo;
     private final OrganizationUserRepository orgUserRepo;
     private final OrganizationLoginTokenRepository tokenRepo;
+    private final AuthenticationManager authManager;
     private final JWTUtil jwtUtil;
     private final PasswordEncoder encoder;
     private final EmailUtil emailService; 
@@ -75,7 +79,6 @@ public class OrganizationServiceIMPL implements OrganizationService {
         
         return response;
     }
-
 
     @Override
     public OrganizationDTO organizationById(Long id) {
@@ -148,17 +151,17 @@ public class OrganizationServiceIMPL implements OrganizationService {
     }
     
     
-    public void createLoginForOrganization(CreateOrganizationLoginDTO dto) {
+    public void createLoginForOrganization(CreateLoginDTO dto) {
 
-        log.info("Creating login for Organization ID={}", dto.getOrganizationId());
+        log.info("Creating login for Organization ID={}", dto.getId());
 
-        OrganizationEntity org = orgRepo.findById(dto.getOrganizationId())
+        OrganizationEntity org = orgRepo.findById(dto.getId())
                 .orElseThrow(() -> new ApiException("Organization not found"));
 
         if (!Boolean.TRUE.equals(org.getStatus())) {
             
         	log.warn("Organization login creation blocked: inactive orgId={}"
-            		, dto.getOrganizationId());
+            		, dto.getId());
            
             throw new ApiException("Organization must be active to create login");
         }
@@ -195,7 +198,7 @@ public class OrganizationServiceIMPL implements OrganizationService {
     }
 
 
-    public void setPassword(OrganizationSetPasswordDTO dto) {
+    public void setPassword(SetPasswordDTO dto) {
 
         OrganizationLoginToken t = tokenRepo.findByToken(dto.getToken())
                 .orElseThrow(() -> new ApiException("Invalid or expired link"));
@@ -216,19 +219,20 @@ public class OrganizationServiceIMPL implements OrganizationService {
         		, user.getEmail());
     }
 
-    public AuthResponseDTO login(OrganizationLoginRequestDTO dto) {
+    public AuthResponseDTO loginOrganization(LoginRequestDTO dto) {
 
-        OrganizationUserEntity user = orgUserRepo.findByEmail(dto.getEmail())
+        OrganizationUserEntity user = orgUserRepo.findByEmail(dto.getEmailId())
                 .orElseThrow(() -> new ApiException("Invalid credentials"));
 
-        if (!user.getActive()) {
-            throw new ApiException("Account not activated. Please check your email.");
-        }
+        Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                		dto.getEmailId(), dto.getPassword()));
 
-        return new AuthResponseDTO(
-                jwtUtil.generateAccessToken(dto.getEmail()),
-                jwtUtil.generateRefreshToken(dto.getEmail()),
-                "Bearer"
-        );
+        String access = jwtUtil.generateAccessToken(dto.getEmailId());
+        String refresh = jwtUtil.generateRefreshToken(dto.getEmailId());
+
+        log.info("Organization Login Successful | email={}", dto.getEmailId());
+
+        return new AuthResponseDTO(access, refresh, "Bearer");
     }
 }
